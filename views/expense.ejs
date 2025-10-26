@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .mcon{
+            width: 100%;
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .expen{
+            width: 70%;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 5px solid;border-radius: 10px;
+            padding: 20px;
+        }
+
+        .year{
+            background: rgba(168, 168, 168, 0.3);
+            display: flex;flex-direction: column;
+            gap: 5px;
+        }
+
+        .year h1{
+            border-bottom: 3px solid;
+        }
+
+        .year input{
+            width: 80%;
+            padding: 10px 20px;
+            border-radius: 10px;
+            align-self: center;
+        }
+
+        .months{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            position: relative;
+            
+        }
+
+        .months h1{
+            width: 100%;
+            border-bottom: 3px solid;
+            margin-top: 10px;
+
+        }
+
+        .months div{
+            width: 70%;
+            background-color: #667eea;
+            margin: auto;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .months input{
+            padding: 10px 20px;
+            border: 2px solid purple;
+            border-radius: 10px;
+        }
+
+        .acc{
+            position: absolute;
+            bottom: 0;
+            left: 50%;background-color: wheat;
+            color: black;
+            font-size: large;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid purple;
+            transform: translate(-50%, 60%);
+            transition: 300ms
+        }
+
+        .acc:hover{
+            scale: 1.1;
+        }
+
+        #myChart{
+            max-height: 500px;
+            border: 5px solid;
+            margin: auto;
+        }
+
+        .sum{
+            width: 100%;
+            height: 50vh;margin-top: 30px;
+            display: flex;
+            align-items: center;justify-content: center;
+            gap: 20px;
+        }
+
+        .summ{
+            width: 200px;
+            height: 200px;
+            border: 2px solid violet;
+            border-radius: 10px;
+            padding: 20px;gap: 10px;
+            position: relative;
+        }
+
+        .summ div{
+            position: absolute;
+            top: 0;left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+    <title>Expenses Tracker</title>
+</head>
+<body>
+    <nav>
+        <h1>Student Helper</h1>
+        <li>
+            <ul><a href="/home">Home</a></ul>
+            <ul><a href="/schedule">Schedule</a></ul>
+            <ul><a href="/expenses">Expenses</a></ul>
+            <ul><a href="/find">Find</a></ul>
+            <ul><a href="#">About</a></ul>
+            <div class="profile" onclick="window.location.href = '/profile'">
+                <img src="<%=user.profile %>" alt="">
+            </div>
+        </li>
+    </nav>
+
+
+    <div class="mcon">
+
+        <div class="expen">
+            <div class="year">
+                <h1>Year</h1>
+                <input type="number" onchange="checkyear(this)" id="year" placeholder="Enter Year: ">
+            </div>
+            <div class="months">
+                <h1 style="display: block;">MONTHS</h1>
+                <div>
+                    <input type="number" placeholder="JAN">
+                    <input type="number" placeholder="FEB">
+                    <input type="number" placeholder="MAR">
+                    <input type="number" placeholder="APR">
+                    <input type="number" placeholder="MAY">
+                    <input type="number" placeholder="JUN">
+                    <input type="number" placeholder="JUL">
+                    <input type="number" placeholder="AUG">
+                    <input type="number" placeholder="SEP">
+                    <input type="number" placeholder="OCT">
+                    <input type="number" placeholder="NOV">
+                    <input type="number" placeholder="DEC">
+                    <button class="acc" onclick="addData()">Add</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="loading-screen" style="display: none;">
+        <img src="https://img.pikbest.com/png-images/20190918/cartoon-snail-loading-loading-gif-animation_2734139.png!bw700">
+    </div>
+    
+
+    <canvas id="myChart" style="width:600px;max-width:700px"></canvas>
+
+
+    <div class="sum">
+        <div class="summ">
+            <h2>Total Earn</h2>
+            <div>
+                <h3 id="ty">100%</h3>
+            </div>
+        </div>
+
+
+        <div class="summ">
+            <h2>Profit</h2>
+            <div>
+                <h3 id="pr">100%</h3>
+            </div>
+        </div>
+
+    </div>
+
+
+
+
+    <script src="/extra.js"></script>
+
+    <script>
+
+        let data ;
+
+        async function getdata(){
+            let res =  await some("/expenses/load",{})
+            data = res.result
+            generatechart()
+            console.log(data)
+            calculateincome()
+
+        }
+        getdata()
+            
+        function calculateincome(){
+            data.sort((a, b) => b.year -a.year);
+            let totalc = 0
+            let totalp = 0
+
+            if(data.length >= 2){
+                let prev = JSON.parse(data[1].months)
+                let current = JSON.parse(data[0].months)
+                prev.forEach(v=>{totalp += v})
+                current.forEach(v=>{totalc += v})
+            }
+            
+
+            let yearrise = totalc-totalp
+            let totalincome = 0
+
+            for(let obj of data){
+                let arr = JSON.parse(obj.months)
+                arr.forEach((v)=>{totalincome += v})
+
+            }
+            console.log(totalincome)
+
+            getId("ty").innerHTML = totalincome
+            getId("pr").innerHTML = yearrise
+        }
+        
+
+
+        function insertval(months){
+            let m = JSON.parse(months)
+            console.log(m)
+            document.querySelectorAll(".months >div > input").forEach((v,i)=>{
+                v.value = m[i]
+            })
+            document.querySelector(".acc").innerHTML = "UPDATE"
+        }
+
+        function checkyear(ele){
+            console.log(ele.value)
+            let exist=false
+            for(let obj of data){
+
+                if(obj.year == ele.value){
+                    exist = true
+                    insertval(obj.months)
+                    break
+                }
+            }
+            if(!exist){
+                document.querySelector(".acc").innerHTML = "ADD"
+                document.querySelectorAll(".months >div > input").forEach(v=>{v.value = ""})
+            }
+        }
+
+
+        async function addData(){
+            let exist = false
+            let year = Number(document.getElementById("year").value)
+            let id=0
+            let months = []
+            document.querySelectorAll(".months > div > input").forEach((v)=>{
+                months.push(Number(v.value))
+            })
+
+            for(let obj in data){
+                if(obj.year == year){
+                    exist = true
+                    id = obj.id
+                    break
+                }
+            }
+            let ndata = {"year":year,"months":JSON.stringify(months),id}
+            
+            let res = await some((exist)?"/expenses/update":"/expenses/add", ndata)
+            console.log(res) 
+            getdata()
+        }
+
+        
+
+        function generateData(){
+            let dataset = []
+            for(let obj of data){
+                dataset.push({
+                    label:obj.year,
+                    data: JSON.parse(obj.months),
+                    borderColor: randomHex(),
+                    fill: false
+                })
+            }
+            return dataset
+
+        }
+
+        let ch;
+
+
+        function generatechart(){
+            if(ch) ch.destroy()
+            const ctx = document.getElementById('myChart');
+            const xValues = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October","November", "December"];
+
+            ch = new Chart("myChart", {
+            type: "line",
+                data: {
+                    labels: xValues,
+                    datasets: generateData()
+                },
+                options: {
+                    legend: {display: false}
+                }
+            });
+
+        }
+
+        
+        
+
+
+    </script>
+    
+</body>
+</html>

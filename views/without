@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Student Helper</title>
+
+    <style>
+        .main{
+            height: 100vh;display: flex;
+            align-items: center;justify-content: center;
+        }
+        .schedule{
+            height: 80%;width: 80%;padding: 20px;
+            border: 2px solid black;
+            border-radius: 10px;overflow-y: auto;
+        }
+
+        .heading{
+            display: flex;
+        }
+        .heading button{
+            background: transparent;border: none;
+        }
+
+        .titulo{
+            border-bottom: 2px solid;font-size: larger;
+
+        }
+
+        .time{
+            width: 200px;
+            align-items: center;
+        }
+
+        .day{
+            width: 120px;
+            text-align: center;
+        }
+        .dltbtn{
+            flex: 1;
+            font-size: large;
+        }
+
+        .decor{
+            border: 2px solid blue;
+        }
+
+        .row{
+            display: flex;
+            margin: 5px 0;
+            border-top: 1px solid;
+        }
+
+        .row div{
+            padding: 20px 0;
+            border: 2px solid;
+        }
+
+        .addsced{
+            background: purple;
+            color: white;border: 2px solid red;
+            position: absolute;padding: 10px 20px;
+            bottom: -100px;border-radius: 20px;
+        left: 50%;transform: translateX(-50%);
+        transition: 300ms;
+        }
+        .addsced:hover{
+            scale: 1.1;
+            background: rgb(160, 1, 160);
+        }
+
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>Student Helper</h1>
+        <li>
+            <ul> <a href="#">Home</a></ul>
+            <ul><a href="#">Scedule</a></ul>
+            <ul><a href="#">Expenses</a></ul>
+            <ul><a href="#">Find</a></ul>
+            <ul><a href="#">About</a></ul>
+            <div class="profile">
+                <img src="https://4.img-dpreview.com/files/p/E~TS590x0~articles/3925134721/0266554465.jpeg" alt="">
+
+            </div>
+        </li>
+    </nav>
+
+    <div class="main">
+        <div class="schedule">
+            <div class="titulo"><h1>My Schedule</h1></div>
+            <div class="heading">
+                <h1 class="time">Time</h1>
+                <h1 class="day">M</h1>
+                <h1 class="day">T</h1>
+                <h1 class="day">W</h1>
+                <h1 class="day">Th</h1>
+                <h1 class="day">F</h1>
+                <h1 class="day">S</h1>
+                <h1 class="day">S</h1>
+                <button class="dltbtn">Action</button>
+            </div>
+
+            
+
+            <button class="addsced">Add Schedule</button>
+
+        </div>
+
+    </div>
+
+    
+
+    <footer>
+    all right reserve by Student Helper    
+    </footer>
+
+    <script>
+
+       async function Delete(id) {
+            const res = await fetch("/schedule/delete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id })
+            });
+
+            const result = await res.json();
+            get()
+            
+        }
+
+
+
+
+        function toMinutes(t) {
+                let [h, m] = t.split(":").map(Number);
+                return h * 60 + m;
+        }
+        async function get(){
+            let res =  await fetch("/schedule/sched")
+            let rows = await res.json()
+            console.log(rows)
+            
+            //[
+            //    {starttime:"10:30",endtime:"11:30",day:"wednesday",label:"WORK",overlaps:false},
+            //    {starttime:"8:30",endtime:"11:30",day:"wednesday",label:"WORK",overlaps:false},
+            //    {starttime:"6:30",endtime:"7:30",day:"friday",label:"WORK",overlaps:false},
+            //    {starttime:"10:30",endtime:"11:30",day:"tuesday",label:"WORK",overlaps:false}
+            //]
+
+            
+
+
+            function checkoverlaps(){
+                rows.sort((a, b) => toMinutes(a.startt_time) - toMinutes(b.startt_time));
+                for (let i = 0; i < rows.length - 1; i++) {
+                    if (rows[i].day !== rows[i + 1].day) continue;
+
+                    let current = toMinutes(rows[i].end_time);
+                    let next = toMinutes(rows[i + 1].startt_time);
+
+                    if (current > next) {
+                        rows[i].overlaps = true;
+                        rows[i + 1].overlaps = true;
+                    }
+                }
+
+            }
+
+            function sched(data,label,overlap){
+                let divs = ""
+                let days ={"monday":0,"tuesday":1,"wednesday":2,"thursday":3,"friday":4,"saturday":5,"sunday":6}
+
+                for(let i = 0; i<7;i++){
+                    if(i == days[data] && overlap){
+                        divs+=`<div class="day" style="background:pink;"><h3>${label}</h3></div>`
+                    }
+                    else if(i == days[data]){
+                        divs+=`<div class="day decor"><h3>${label}</h3></div>`}
+                    else{
+                        divs+=`<div class="day"><h3>none</h3></div>`
+                    }
+                }
+                return divs
+            }
+
+            checkoverlaps()
+
+            let html = ""
+
+            rows.forEach(v=>{
+                html+= `
+                <div class="row">
+                    <p class="time">${v.startt_time} - ${v.end_time}</p>
+                    `+
+                    sched(v.day,v.label,v.overlaps)
+                    +`
+                    <button class="dltbtn" onclick="Delete(${v.id})">Delete</button>
+                </div>
+                `
+            })
+            document.querySelector(".schedule").innerHTML +=html
+        }
+
+        get()
+    </script>
+    
+    
+</body>
+</html>

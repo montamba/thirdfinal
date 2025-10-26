@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Auth</title>
+  <style>
+    * { padding: 0; margin: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 900px;
+      height: 500px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .formcon {
+      width: 50%;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: 0.6s;
+    }
+
+    .formcon h1 {
+      margin-bottom: 20px;
+      color: #667eea;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 5px;
+      text-align: center;
+    }
+
+    .formcon input {
+      width: 80%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 2px solid #667eea;
+      background: #f0f2ff;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .formcon input:focus {
+      background: white;
+      box-shadow: 0 0 10px rgba(102,126,234,0.3);
+    }
+
+    .formcon button {
+      width: 85%;
+      padding: 12px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .formcon button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+
+    .right-panel {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 50%;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .right-panel h2 {
+      margin-bottom: 20px;
+    }
+
+    .right-panel button {
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: 2px solid white;
+      background: transparent;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .right-panel button:hover {
+      background: white;
+      color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="formcon" id="signin">
+      <h1>Sign In</h1>
+      <input id="sname" type="text" placeholder="Enter Name">
+      <input id="spass" type="password" placeholder="Enter Password">
+      <button onclick="signin()">Sign In</button>
+    </div>
+
+    <div class="formcon" id="signup" style="display:none;">
+      <h1>Sign Up</h1>
+      <input id="pname" type="text" placeholder="Full Name">
+      <input id="pemail" type="email" placeholder="Email">
+      <input id="ppass" type="password" placeholder="Password">
+      <input id="cpass" type="password" placeholder="Confirm Password">
+      <button onclick="signup()">Sign Up</button>
+    </div>
+
+    <div class="right-panel">
+      <h2 id="ctext">Don't have an account?</h2>
+      <button id="tbutton" onclick="toggleForms()">Go to Sign Up</button>
+    </div>
+  </div>
+
+
+  <div class="loading-screen" style="display: none;">
+    <img src="https://img.pikbest.com/png-images/20190918/cartoon-snail-loading-loading-gif-animation_2734139.png!bw700">
+  </div>
+
+  <script src="extra.js"></script>
+
+  <script>
+    function toggleForms() {
+      const signin = document.getElementById('signin');
+      const signup = document.getElementById('signup');
+      const text = document.getElementById('ctext');
+      const btn = document.getElementById('tbutton');
+
+      if (signin.style.display !== 'none') {
+        signin.style.display = 'none';
+        signup.style.display = 'flex';
+        text.innerText = 'Already have an account?';
+        btn.innerText = 'Go to Sign In';
+      } else {
+        signup.style.display = 'none';
+        signin.style.display = 'flex';
+        text.innerText = "Don't have an account?";
+        btn.innerText = 'Go to Sign Up';
+      }
+    }
+
+    function clear(){
+      document.querySelectorAll("input").forEach(v=>{
+        v.value = ""
+      })
+    }
+
+
+    async function signin(){
+      data = {
+        name:getId("sname").value,
+        password:getId("spass").value
+      }
+
+      let dat = await some("/signin",data)
+      if(dat.status=="accept"){
+        clear()
+        setTimeout(()=>{
+          window.location.href = "/home"
+        },2000)
+      }
+
+      
+    }
+
+    async function signup(){
+      let data = {
+        name:getId("pname").value,
+        email:getId("pemail").value,
+        password:getId("ppass").value,
+        cpass:getId("cpass").value
+      }
+
+      let dat = await some("/signup",data)
+      console.log(dat)
+      
+      
+    }
+
+
+
+    
+  </script>
+</body>
+</html>

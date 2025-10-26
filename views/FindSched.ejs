@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+
+        .mcontainer{
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+            
+        }
+        .con{
+            width: 80%;
+            height: 80%;
+            border:5px solid lightblue;
+            padding: 20px;border-radius: 10px;
+            display: flex;background: white;
+            flex-wrap: wrap; gap: 5px;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .card{
+            width: 300px;height: 200px;
+            border: 2px solid;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: larger;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: 300ms;color: white;
+        }
+
+        .card:hover{
+            box-shadow: 0 10px 10px gray;
+            transform: translateY(-10px);
+        }
+
+        .card h1{
+            border-bottom: 2px solid;
+            margin-bottom: 10px;
+        }
+
+        .card button{
+            position: relative;
+            background: none;
+            width: 90%;margin: auto;
+            border-radius: 10px;
+            padding: 5px ;
+            transition: 300ms;
+        }
+
+        .card button:hover{
+            background: linear-gradient(rgba(0, 0, 255, 0.30));
+            scale: 1.07;
+        }
+    </style>
+    <title>Document</title>
+</head>
+<body>
+    <nav>
+        <h1>Student Helper</h1>
+        <li>
+            <ul><a href="/home">Home</a></ul>
+            <ul><a href="/schedule">Schedule</a></ul>
+            <ul><a href="/expenses">Expenses</a></ul>
+            <ul><a href="/find">Find</a></ul>
+            <ul><a href="#">About</a></ul>
+            <div class="profile" onclick="window.location.href = '/profile'">
+                <img src="<%=user.profile %>" alt="">
+            </div>
+        </li>
+    </nav>
+
+    <div class="mcontainer">
+        <div class="con">
+            <div class="card">
+                <div>
+                    <h1>Work</h1>
+                </div>
+                <h3>Day: monday</h3>
+                <p>Time: 1:30 - 3:30</p>
+                <p>location: here</p>
+                <p>position:employee</p>
+                <button>Select</button>
+            </div>
+
+            <div class="card">
+                <div>
+                    <h1>Work</h1>
+                </div>
+                <h3>Day: monday</h3>
+                <p>Time: 1:30 - 3:30</p>
+                <p>location: here</p>
+                <p>position:employee</p>
+                <button>Select</button>
+            </div>
+        </div>
+            
+    </div>
+
+
+    <div class="loading-screen" style="display: none;">
+        <img src="https://img.pikbest.com/png-images/20190918/cartoon-snail-loading-loading-gif-animation_2734139.png!bw700">
+    </div>
+
+
+
+
+    <script src="/extra.js"></script>
+    <script>
+
+        
+        //[
+        //    {id:1,startt_time:"8:30", end_time:"10:30",label:"WORK",day:"moday",overlapse:"false",position:"cashier",location:"molo"},
+        //    {id:2,startt_time:"6:30", end_time:"10:30",label:"SCHOOL",day:"tuesday",overlapse:"false",position:"math",location:"school"},
+        //    {id:3,startt_time:"8:30", end_time:"10:30",label:"WORK",day:"moday",overlapse:"false",position:"cashier",location:"molo"},
+        //    {id:4,startt_time:"8:30", end_time:"10:30",label:"WORK",day:"moday",overlapse:"false",position:"cashier",location:"molo"},
+        //    {id:5,startt_time:"8:30", end_time:"10:30",label:"WORK",day:"moday",overlapse:"false",position:"cashier",location:"molo"},
+        //];
+        let data;
+
+        async function showcards(){
+            let con = document.querySelector(".con")
+            data = await some("/find/getsched",{});
+            con.innerHTML = ""
+            let cards = ""
+            data.forEach(v=>{
+                cards += `
+                <div class="card">
+                    <div>
+                        <h1>${v.label}</h1>
+                    </div>
+                    <h3>Day: ${v.day}</h3>
+                    <p>Time: ${v.startt_time} - ${v.end_time}</p>
+                    <p>location: ${v.location}</p>
+                    <p>position:${v.position}</p>
+                    <button onclick="select(${v.id})">Select</button>
+                </div>`
+            })
+            con.innerHTML = cards
+        }
+
+        showcards()
+
+        function select(id){
+            let selected = {};
+            data.forEach(v=>{
+                if(v.id == id) selected = v;
+            })
+            alert("Added Success")
+            some("/schedule/add", selected)
+        }
+
+
+    </script>
+
+
+
+</body>
+</html>
